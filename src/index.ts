@@ -20,6 +20,7 @@ export interface GlobOptions {
   onlyDirectories?: boolean;
   onlyFiles?: boolean;
   debug?: boolean;
+  globstar?: boolean;
 }
 
 interface InternalProps {
@@ -200,7 +201,8 @@ function crawl(options: GlobOptions, cwd: string, sync: boolean) {
   const matcher = picomatch(processed.match, {
     dot: options.dot,
     nocase,
-    ignore: processed.ignore
+    ignore: processed.ignore,
+    noglobstar: options.globstar === false
   });
 
   const ignore = picomatch(processed.ignore, {
