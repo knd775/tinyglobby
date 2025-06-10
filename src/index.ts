@@ -193,6 +193,7 @@ function crawl(options: GlobOptions, cwd: string, sync: boolean) {
 
   const processed = processPatterns(options, cwd, props);
   const nocase = options.caseSensitiveMatch === false;
+  const noglobstar = options.globstar === false;
 
   if (options.debug) {
     log('internal processing patterns:', processed);
@@ -202,17 +203,19 @@ function crawl(options: GlobOptions, cwd: string, sync: boolean) {
     dot: options.dot,
     nocase,
     ignore: processed.ignore,
-    noglobstar: options.globstar === false
+    noglobstar
   });
 
   const ignore = picomatch(processed.ignore, {
     dot: options.dot,
-    nocase
+    nocase,
+    noglobstar
   });
 
   const partialMatcher = getPartialMatcher(processed.match, {
     dot: options.dot,
-    nocase
+    nocase,
+    noglobstar
   });
 
   const fdirOptions: Partial<FdirOptions> = {

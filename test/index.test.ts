@@ -42,6 +42,11 @@ test('only double star', async () => {
   assert.deepEqual(files.sort(), ['a/a.txt', 'a/b.txt', 'b/a.txt', 'b/b.txt']);
 });
 
+test('only double star (noglobstar)', async () => {
+  const files = await glob({ patterns: ['**'], globstar: false, cwd });
+  assert.deepEqual(files.sort(), []);
+});
+
 test('no directory expansion if expandDirectories is set to false', async () => {
   const files = await glob({ patterns: ['a'], expandDirectories: false, cwd });
   assert.deepEqual(files.sort(), []);
@@ -65,9 +70,19 @@ test('negative patterns', async () => {
   assert.deepEqual(files.sort(), ['a/a.txt']);
 });
 
+test('negative patterns (noglobstar)', async () => {
+  const files = await glob({ patterns: ['**/a.txt', '!b/a.txt'], globstar: false, cwd });
+  assert.deepEqual(files.sort(), []);
+});
+
 test('negative patterns setting root as /', async () => {
   const files = await glob({ patterns: ['**/a.txt', '!/b/a.txt'], cwd });
   assert.deepEqual(files.sort(), ['a/a.txt', 'b/a.txt']);
+});
+
+test('negative patterns setting root as / (noglobstar)', async () => {
+  const files = await glob({ patterns: ['**/a.txt', '!/b/a.txt'], globstar: false, cwd });
+  assert.deepEqual(files.sort(), []);
 });
 
 test('patterns as string', async () => {
@@ -80,9 +95,19 @@ test('ignore option', async () => {
   assert.deepEqual(files.sort(), ['a/a.txt']);
 });
 
+test('ignore option (noglobstar)', async () => {
+  const files = await glob({ patterns: ['**/a.txt'], ignore: ['b/a.txt'], globstar: false, cwd });
+  assert.deepEqual(files.sort(), []);
+});
+
 test('ignore option as string', async () => {
   const files = await glob({ patterns: ['**/a.txt'], ignore: 'b/a.txt', cwd });
   assert.deepEqual(files.sort(), ['a/a.txt']);
+});
+
+test('ignore option as string (noglobstar)', async () => {
+  const files = await glob({ patterns: ['**/a.txt'], ignore: 'b/a.txt', globstar: false, cwd });
+  assert.deepEqual(files.sort(), []);
 });
 
 test('ignore option with an empty string array', async () => {
@@ -90,9 +115,19 @@ test('ignore option with an empty string array', async () => {
   assert.deepEqual(files.sort(), ['a/a.txt', 'b/a.txt']);
 });
 
+test('ignore option with an empty string array (noglobstar)', async () => {
+  const files = await glob({ patterns: ['**/a.txt'], ignore: [''], globstar: false, cwd });
+  assert.deepEqual(files.sort(), []);
+});
+
 test('caseSensitiveMatch', async () => {
   const files = await glob({ patterns: ['**/A.TXT'], caseSensitiveMatch: false, cwd });
   assert.deepEqual(files.sort(), ['a/a.txt', 'b/a.txt']);
+});
+
+test('caseSensitiveMatch (noglobstar)', async () => {
+  const files = await glob({ patterns: ['**/A.TXT'], caseSensitiveMatch: false, globstar: false, cwd });
+  assert.deepEqual(files.sort(), []);
 });
 
 test('caseSensitiveMatch (default)', async () => {
@@ -100,9 +135,25 @@ test('caseSensitiveMatch (default)', async () => {
   assert.deepEqual(files.sort(), []);
 });
 
+test('caseSensitiveMatch (default) (noglobstar)', async () => {
+  const files = await glob({ patterns: ['**/A.TXT'], globstar: false, cwd });
+  assert.deepEqual(files.sort(), []);
+});
+
 test('caseSensitiveMatch with ignore', async () => {
   const files = await glob({ patterns: ['**/A.TXT'], ignore: ['B/**'], caseSensitiveMatch: false, cwd });
   assert.deepEqual(files.sort(), ['a/a.txt']);
+});
+
+test('caseSensitiveMatch with ignore (noglobstar)', async () => {
+  const files = await glob({
+    patterns: ['**/A.TXT'],
+    ignore: ['B/**'],
+    caseSensitiveMatch: false,
+    globstar: false,
+    cwd
+  });
+  assert.deepEqual(files.sort(), []);
 });
 
 test('onlyDirectories option', async () => {
@@ -237,9 +288,19 @@ test('absolute + empty commonPath', async () => {
   assert.deepEqual(files.sort(), [`${cwd.replaceAll('\\', '/')}a/a.txt`, `${cwd.replaceAll('\\', '/')}a/b.txt`]);
 });
 
+test('absolute + empty commonPath (noglobstar)', async () => {
+  const files = await glob({ patterns: ['a/**.txt'], cwd, absolute: true, expandDirectories: false, globstar: false });
+  assert.deepEqual(files.sort(), []);
+});
+
 test('handle symlinks', async () => {
   const files = await glob({ patterns: ['.symlink/**'], cwd });
   assert.deepEqual(files.sort(), ['.symlink/dir/a.txt', '.symlink/dir/b.txt', '.symlink/file']);
+});
+
+test('handle symlinks (noglobstar)', async () => {
+  const files = await glob({ patterns: ['.symlink/**'], globstar: false, cwd });
+  assert.deepEqual(files.sort(), []);
 });
 
 test('handle recursive symlinks', async () => {
@@ -258,6 +319,16 @@ test('handle recursive symlinks', async () => {
   ]);
 });
 
+test('handle recursive symlinks (noglobstar)', async () => {
+  const files = await glob({
+    patterns: ['.symlink/.recursive/**', '!.symlink/.recursive/**/.{a,deep}'],
+    dot: true,
+    globstar: false,
+    cwd
+  });
+  assert.deepEqual(files.sort(), []);
+});
+
 test('handle symlinks (absolute)', async () => {
   const files = await glob({ patterns: ['.symlink/**'], absolute: true, cwd });
   assert.deepEqual(files.sort(), [
@@ -265,6 +336,11 @@ test('handle symlinks (absolute)', async () => {
     `${cwd.replaceAll('\\', '/')}.symlink/dir/b.txt`,
     `${cwd.replaceAll('\\', '/')}.symlink/file`
   ]);
+});
+
+test('handle symlinks (absolute) (noglobstar)', async () => {
+  const files = await glob({ patterns: ['.symlink/**'], absolute: true, globstar: false, cwd });
+  assert.deepEqual(files.sort(), []);
 });
 
 test('handle recursive symlinks (absolute)', async () => {
@@ -284,12 +360,35 @@ test('handle recursive symlinks (absolute)', async () => {
   ]);
 });
 
+test('handle recursive symlinks (absolute) (noglobstar)', async () => {
+  const files = await glob({
+    patterns: ['.symlink/.recursive/**', '!.symlink/.recursive/**/.{a,deep}'],
+    absolute: true,
+    dot: true,
+    globstar: false,
+    cwd
+  });
+  assert.deepEqual(files.sort(), []);
+});
+
 test('exclude symlinks if the option is disabled', async () => {
   const files = await glob({
     patterns: ['.symlink/**'],
     dot: true,
     followSymbolicLinks: false,
     expandDirectories: false,
+    cwd
+  });
+  assert.deepEqual(files.sort(), []);
+});
+
+test('exclude symlinks if the option is disabled (noglobstar)', async () => {
+  const files = await glob({
+    patterns: ['.symlink/**'],
+    dot: true,
+    followSymbolicLinks: false,
+    expandDirectories: false,
+    globstar: false,
     cwd
   });
   assert.deepEqual(files.sort(), []);
@@ -320,9 +419,19 @@ test('**/* works', async () => {
   assert.deepEqual(files.sort(), ['a/a.txt', 'a/b.txt', 'b/a.txt', 'b/b.txt']);
 });
 
+test('**/* works (noglobstar)', async () => {
+  const files = await glob({ patterns: ['**/*'], globstar: false, cwd });
+  assert.deepEqual(files.sort(), []);
+});
+
 test('matching files with specific naming pattern', async () => {
   const files = await glob({ patterns: ['**/[a-c].txt'], cwd });
   assert.deepEqual(files.sort(), ['a/a.txt', 'a/b.txt', 'b/a.txt', 'b/b.txt']);
+});
+
+test('matching files with specific naming pattern (noglobstar)', async () => {
+  const files = await glob({ patterns: ['**/[a-c].txt'], globstar: false, cwd });
+  assert.deepEqual(files.sort(), []);
 });
 
 test('dynamic patterns that include slashes inside parts', async () => {
@@ -351,6 +460,14 @@ test('negative patterns in options', async () => {
   assert.deepEqual(files2.sort(), ['a/b.txt', 'b/b.txt']);
 });
 
+test('negative patterns in options (noglobstar)', async () => {
+  const files = await glob({ patterns: ['**/*.txt', '!**/b.txt'], globstar: false, cwd });
+  assert.deepEqual(files.sort(), []);
+
+  const files2 = await glob({ patterns: ['**/*.txt', '!**/a.txt'], globstar: false, cwd });
+  assert.deepEqual(files2.sort(), []);
+});
+
 test('negative absolute patterns in options', async () => {
   const files = await glob({
     patterns: [`${cwd.replaceAll('\\', '/')}**/*.txt`, `!${cwd.replaceAll('\\', '/')}**/b.txt`],
@@ -363,6 +480,22 @@ test('negative absolute patterns in options', async () => {
     cwd
   });
   assert.deepEqual(files2.sort(), ['a/b.txt', 'b/b.txt']);
+});
+
+test('negative absolute patterns in options (noglobstar)', async () => {
+  const files = await glob({
+    patterns: [`${cwd.replaceAll('\\', '/')}**/*.txt`, `!${cwd.replaceAll('\\', '/')}**/b.txt`],
+    globstar: false,
+    cwd
+  });
+  assert.deepEqual(files.sort(), []);
+
+  const files2 = await glob({
+    patterns: [`${cwd.replaceAll('\\', '/')}**/*.txt`, `!${cwd.replaceAll('\\', '/')}**/a.txt`],
+    globstar: false,
+    cwd
+  });
+  assert.deepEqual(files2.sort(), []);
 });
 
 // can't easily make them properly work right now

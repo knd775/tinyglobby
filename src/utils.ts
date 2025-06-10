@@ -4,6 +4,7 @@ import picomatch from 'picomatch';
 export interface PartialMatcherOptions {
   dot?: boolean;
   nocase?: boolean;
+  noglobstar?: boolean;
 }
 
 // can't use `Matcher` from picomatch as it requires a second argument since @types/picomatch v4
@@ -62,7 +63,7 @@ export function getPartialMatcher(patterns: string[], options?: PartialMatcherOp
         // unlike popular belief, `**` doesn't return true in *all* cases
         // some examples are when matching it to `.a` with dot: false or `..`
         // so it needs to match to return early
-        if (part === '**') {
+        if (part === '**' && options?.noglobstar !== true) {
           return true;
         }
 
